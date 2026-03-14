@@ -36,7 +36,7 @@ export function MagentaStrippedImage({ src, alt, className }: { src: string; alt
       const data = ctx.getImageData(0, 0, img.width, img.height)
       const px = data.data
       for (let i = 0; i < px.length; i += 4) {
-        if (px[i] > 200 && px[i + 1] < 60 && px[i + 2] > 200) {
+        if (px[i] > 150 && px[i + 1] < 100 && px[i + 2] > 150) {
           px[i + 3] = 0
         }
       }
