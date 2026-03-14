@@ -1,5 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
+import { execFile } from 'child_process'
 import fs from 'fs/promises'
 import path from 'path'
 import os from 'os'
@@ -102,6 +103,7 @@ export async function generateWithMcp(
     const pathMatch = textContent.match(/saved to[:\s]+(.+\.(png|jpg))/i)
     if (pathMatch) {
       job.resultPath = pathMatch[1]
+      await postprocessImage(job.resultPath)
 
       // Save metadata sidecar
       const metaPath = job.resultPath.replace(/\.(png|jpg|jpeg)$/i, '.meta.json')
@@ -131,4 +133,18 @@ function getShortName(modelId: string): 'nb1' | 'nb2' | 'nbpro' {
   if (modelId.includes('3-pro')) return 'nbpro'
   if (modelId.includes('3.1-flash')) return 'nb2'
   return 'nb1'
+}
+
+function postprocessImage(imagePath: string): Promise<void> {
+  const script = path.join(process.cwd(), 'postprocess.py')
+  return new Promise((resolve, reject) => {
+    execFile('python3', [script, imagePath], { cwd: process.cwd() }, (err, _stdout, stderr) => {
+      if (err) {
+        console.error(`postprocess failed for ${imagePath}:`, stderr)
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
 }

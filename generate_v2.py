@@ -12,6 +12,7 @@ import os
 import re
 import glob
 import sys
+from postprocess import process_file
 
 # Load API key from .mcp.json
 with open(os.path.expanduser("~/.claude/.mcp.json")) as f:
@@ -208,7 +209,10 @@ def main():
         use_mask = is_tile(asset_path)
 
         print(f"{output_name} ({'+ mask' if use_mask else 'text only'})", flush=True)
-        generate(output_name, prompt, include_mask=use_mask, model=model)
+        result = generate(output_name, prompt, include_mask=use_mask, model=model)
+        if result:
+            print(f"  postprocess: ", end="", flush=True)
+            process_file(result)
 
     print("\nDone!", flush=True)
 
