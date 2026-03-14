@@ -19,7 +19,7 @@ export async function buildPromptForAsset(assetsDir: string, assetId: string): P
   const assetPath = path.join(assetsDir, assetId + '.md')
   const segments = assetId.split('/')
 
-  // Level 1: game.md
+  // Level 1: game.md — world theme and palette (style-agnostic)
   const gameMd = path.join(assetsDir, 'game.md')
   const gameContent = await loadMd(gameMd)
   if (gameContent) parts.push(gameContent)
@@ -58,6 +58,39 @@ export async function buildPromptForAsset(assetsDir: string, assetId: string): P
  * - Props don't use masks.
  */
 async function resolveMask(assetsDir: string, assetId: string): Promise<string | null> {
+  // Spritesheets: check for explicit grid_mask reference, then fall back to grid size detection
+  if (assetId.startsWith('spritesheets/')) {
+    const assetMdPath = path.join(assetsDir, assetId + '.md')
+    try {
+      const content = await fs.readFile(assetMdPath, 'utf-8')
+
+      // Check for explicit grid_mask: filename reference
+      const explicitMatch = content.match(/grid_mask:\s*(\S+\.png)/i)
+      if (explicitMatch) {
+        const gridMask = path.join(assetsDir, 'spritesheets', explicitMatch[1])
+        try {
+          await fs.access(gridMask)
+          return gridMask
+        } catch {}
+      }
+
+      // Fall back: detect from "N columns x M rows" or "NxM"
+      const sizeMatch = content.match(/(\d+)\s*columns?\s*x\s*(\d+)\s*rows?/i)
+        || content.match(/(\d+)\s*x\s*(\d+)/i)
+      if (sizeMatch) {
+        const gridMask = path.join(assetsDir, 'spritesheets', `grid_mask_${sizeMatch[1]}x${sizeMatch[2]}.png`)
+        try {
+          await fs.access(gridMask)
+          return gridMask
+        } catch {}
+      }
+    } catch {}
+    // Fallback to 4x8
+    const fallback = path.join(assetsDir, 'spritesheets', 'grid_mask_4x8.png')
+    try { await fs.access(fallback); return fallback } catch {}
+    return null
+  }
+
   if (!assetId.startsWith('tiles/')) return null
 
   // Connectable variant? Check for per-variant mask

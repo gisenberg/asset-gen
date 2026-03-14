@@ -25,12 +25,20 @@ export function EditorPane() {
     window.electronAPI.readFile(selectedAsset.path).then(setAssetContent)
   }, [selectedAsset])
 
-  // Listen for file change events to reload content
+  // Listen for file change events to reload content (asset + ancestors)
   useEffect(() => {
     if (!selectedAsset) return
     const unsub = window.electronAPI.onFileChanged((filePath) => {
       if (filePath === selectedAsset.path) {
         window.electronAPI.readFile(selectedAsset.path).then(setAssetContent)
+      }
+      if (selectedAsset.ancestors.includes(filePath)) {
+        // Reload the changed ancestor
+        window.electronAPI.readFile(filePath).then((content) => {
+          setAncestorContents((prev) =>
+            prev.map((a) => (a.path === filePath ? { ...a, content } : a))
+          )
+        })
       }
     })
     return unsub
@@ -44,15 +52,14 @@ export function EditorPane() {
     return (
       <div className="editor-pane">
         <div className="editor-scroll">
-          <div className="descriptor-preview">
-            <div className="editor-header">
-              <span className="editor-filename">{selectedAsset.name}</span>
-              <span className="descriptor-badge">Descriptor</span>
-            </div>
-            <div className="markdown-preview">
-              <ReactMarkdown>{assetContent}</ReactMarkdown>
-            </div>
-          </div>
+          {ancestorContents.map(({ path, content }) => (
+            <AncestorSection key={path} filePath={path} content={content} />
+          ))}
+          <AssetEditor
+            asset={selectedAsset}
+            content={assetContent}
+            onChange={setAssetContent}
+          />
         </div>
       </div>
     )

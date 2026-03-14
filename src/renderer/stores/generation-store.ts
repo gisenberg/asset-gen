@@ -42,8 +42,8 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
 
     try {
       const prompt = await window.electronAPI.buildPrompt(assetId)
-      const prefix = assetId.includes('tiles/') ? 'tile' : 'item'
-      const nameParts = assetId.split('/').filter((p) => !['tiles', 'props', 'connectable'].includes(p))
+      const prefix = assetId.startsWith('spritesheets/') ? 'sheet' : assetId.includes('tiles/') ? 'tile' : 'item'
+      const nameParts = assetId.split('/').filter((p) => !['tiles', 'props', 'connectable', 'spritesheets'].includes(p))
       // MCP server appends its own timestamp + index suffix
       const filename = `${prefix}_${nameParts.join('_')}_${model.shortName}`
 

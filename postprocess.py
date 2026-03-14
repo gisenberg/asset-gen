@@ -41,6 +41,10 @@ def is_prop(filename):
     return os.path.basename(filename).startswith("item_")
 
 
+def is_sheet(filename):
+    return os.path.basename(filename).startswith("sheet_")
+
+
 def get_mask_path(filename):
     """Determine the correct mask for a tile image.
 
@@ -58,6 +62,18 @@ def get_mask_path(filename):
                 return mask
 
     return TILE_MASK_PATH
+
+
+def cleanup_near_magenta(img_array):
+    """Force near-magenta pixels to exact magenta.
+
+    Models often produce pixels that are close to but not exactly #FF00FF.
+    This cleans them up so chroma keying works cleanly.
+    """
+    r, g, b = img_array[:, :, 0], img_array[:, :, 1], img_array[:, :, 2]
+    near_magenta = (r > 180) & (g < 80) & (b > 180)
+    img_array[near_magenta] = MAGENTA
+    return img_array
 
 
 def process_tile(image_path):
@@ -86,6 +102,21 @@ def process_tile(image_path):
 
     img[is_bg] = MAGENTA
 
+    # Also clean up near-magenta bleed in non-masked areas
+    cleanup_near_magenta(img)
+
+    Image.fromarray(img).save(image_path)
+    return True
+
+
+def process_sheet(image_path):
+    """Clean up near-magenta pixels in spritesheet images.
+
+    Spritesheets don't have a single mask, but the model should produce
+    magenta backgrounds between tiles. Force near-magenta to exact magenta.
+    """
+    img = np.array(Image.open(image_path).convert("RGB"))
+    cleanup_near_magenta(img)
     Image.fromarray(img).save(image_path)
     return True
 
@@ -117,6 +148,9 @@ def process_file(path, dry_run=False):
     elif is_prop(basename):
         kind = "prop"
         detail = "rembg"
+    elif is_sheet(basename):
+        kind = "sheet"
+        detail = "near-magenta cleanup"
     else:
         print(f"  SKIP (unknown type): {basename}")
         return False
@@ -129,6 +163,8 @@ def process_file(path, dry_run=False):
 
     if kind == "tile":
         ok = process_tile(path)
+    elif kind == "sheet":
+        ok = process_sheet(path)
     else:
         ok = process_prop(path)
 

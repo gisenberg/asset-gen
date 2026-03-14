@@ -3,6 +3,8 @@ import type { ImageInfo } from '../../types/ipc'
 
 interface ImageCardProps {
   image: ImageInfo
+  isSelected?: boolean
+  onSelect?: () => void
   onSetActive: () => void
 }
 
@@ -18,7 +20,7 @@ function formatFilenameTimestamp(ts: string): string {
   return ts
 }
 
-function MagentaStrippedImage({ src, alt }: { src: string; alt: string }) {
+export function MagentaStrippedImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -43,10 +45,10 @@ function MagentaStrippedImage({ src, alt }: { src: string; alt: string }) {
     img.src = src
   }, [src])
 
-  return <canvas ref={canvasRef} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+  return <canvas ref={canvasRef} className={className} style={className ? undefined : { width: '100%', height: '100%', objectFit: 'contain' }} />
 }
 
-export function ImageCard({ image, onSetActive }: ImageCardProps) {
+export function ImageCard({ image, isSelected, onSelect, onSetActive }: ImageCardProps) {
   const [showPrompt, setShowPrompt] = useState(false)
 
   const displayTime = image.createdAt
@@ -56,8 +58,8 @@ export function ImageCard({ image, onSetActive }: ImageCardProps) {
       : ''
 
   return (
-    <div className={`image-card ${image.isActive ? 'active' : ''}`}>
-      <div className="image-wrapper" onClick={onSetActive}>
+    <div className={`image-card ${image.isActive ? 'active' : ''} ${isSelected ? 'selected' : ''}`} onClick={onSelect} onDoubleClick={onSetActive}>
+      <div className="image-wrapper">
         <MagentaStrippedImage
           src={`asset://${encodeURIComponent(image.path)}`}
           alt={image.filename}

@@ -1,0 +1,17 @@
+{
+  "0,0": "straight_ew.png",
+  "0,1": "straight_ns.png",
+  "0,2": "corner_ne.png",
+  "0,3": "corner_nw.png",
+  "1,0": "corner_se.png",
+  "1,1": "corner_sw.png",
+  "1,2": "tjunction_nes.png",
+  "1,3": "tjunction_new.png",
+  "2,0": "tjunction_nsw.png",
+  "2,1": "tjunction_esw.png",
+  "2,2": "crossroads.png",
+  "2,3": "end_n.png",
+  "3,0": "end_e.png",
+  "3,1": "end_s.png",
+  "3,2": "end_w.png"
+}

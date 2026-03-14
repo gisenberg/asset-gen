@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAssetStore } from '../../stores/asset-store'
 import { useGenerationStore } from '../../stores/generation-store'
-import { ImageCard } from './ImageCard'
+import { ImageCard, MagentaStrippedImage } from './ImageCard'
 import { GenerationStatus } from './GenerationStatus'
 import { TilemapPreview } from './TilemapPreview'
 import { MODELS } from '../../types/generation'
@@ -23,6 +23,8 @@ export function PreviewPane() {
   const [images, setImages] = useState<ImageInfo[]>([])
   const [tilemapModel, setTilemapModel] = useState(selectedModel.shortName)
   const [showMasks, setShowMasks] = useState(false)
+  const [lightboxImage, setLightboxImage] = useState<ImageInfo | null>(null)
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(-1)
   const [variantImages, setVariantImages] = useState<Record<string, string>>({})
   const [baseTileImage, setBaseTileImage] = useState<string | null>(null)
   const [maskImages, setMaskImages] = useState<Record<string, string>>({})
@@ -86,6 +88,21 @@ export function PreviewPane() {
     if (completedJob) loadImages()
   }, [jobs, selectedAsset])
 
+  // Spacebar opens lightbox for selected image
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && selectedImageIndex >= 0 && images[selectedImageIndex]) {
+        e.preventDefault()
+        setLightboxImage(lightboxImage ? null : images[selectedImageIndex])
+      }
+      if (e.code === 'Escape' && lightboxImage) {
+        setLightboxImage(null)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [selectedImageIndex, images, lightboxImage])
+
   const handleSetActive = async (imagePath: string) => {
     if (!selectedAsset) return
     await window.electronAPI.setActiveSelection(selectedAsset.id, imagePath)
@@ -147,14 +164,26 @@ export function PreviewPane() {
       )}
 
       <div className="image-grid">
-        {images.map((img) => (
+        {images.map((img, i) => (
           <ImageCard
             key={img.path}
             image={img}
+            isSelected={i === selectedImageIndex}
+            onSelect={() => setSelectedImageIndex(i)}
             onSetActive={() => handleSetActive(img.path)}
           />
         ))}
       </div>
+
+      {lightboxImage && (
+        <div className="lightbox" onClick={() => setLightboxImage(null)}>
+          <MagentaStrippedImage
+            src={`asset://${encodeURIComponent(lightboxImage.path)}`}
+            alt={lightboxImage.filename}
+            className="lightbox-image"
+          />
+        </div>
+      )}
     </div>
   )
 }

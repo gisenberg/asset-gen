@@ -11,7 +11,7 @@ const SELECTIONS_FILE = path.join(GENERATED_DIR, '.active-selections.json')
 function assetIdToPrefixes(assetId: string): string[] {
   const parts = assetId.split('/')
   const category = parts[0]
-  const prefix = category === 'tiles' ? 'tile' : 'item'
+  const prefix = category === 'tiles' ? 'tile' : category === 'spritesheets' ? 'sheet' : 'item'
 
   // For deeply nested assets, skip intermediate directory names that are categories
   // tiles/connectable/river/straight_ew → tile_river_straight_ew (skip "connectable")

@@ -119,6 +119,16 @@ export async function generateWithMcp(
         console.error('postprocess error (non-fatal):', e.message)
       }
 
+      // Slice spritesheets into individual tiles — detect grid from asset markdown
+      if (assetId.startsWith('spritesheets/')) {
+        try {
+          const { cols, rows } = await detectGridSize(assetId)
+          await sliceSpritesheet(job.resultPath, cols, rows)
+        } catch (e: any) {
+          console.error('spritesheet slice error (non-fatal):', e.message)
+        }
+      }
+
       // Save metadata sidecar
       try {
         const metaPath = job.resultPath.replace(/\.(png|jpg|jpeg)$/i, '.meta.json')
@@ -155,6 +165,15 @@ function getShortName(modelId: string): 'nb1' | 'nb2' | 'nbpro' {
   return 'nb1'
 }
 
+async function detectGridSize(assetId: string): Promise<{ cols: number; rows: number }> {
+  const mdPath = path.join(process.cwd(), 'assets', assetId + '.md')
+  const content = await fs.readFile(mdPath, 'utf-8')
+  const match = content.match(/(\d+)\s*columns?\s*x\s*(\d+)\s*rows?/i)
+    || content.match(/(\d+)\s*x\s*(\d+)/i)
+  if (match) return { cols: parseInt(match[1]), rows: parseInt(match[2]) }
+  return { cols: 4, rows: 8 } // fallback
+}
+
 function postprocessImage(imagePath: string): Promise<void> {
   const script = path.join(process.cwd(), 'postprocess.py')
   return new Promise((resolve, reject) => {
@@ -166,5 +185,26 @@ function postprocessImage(imagePath: string): Promise<void> {
         resolve()
       }
     })
+  })
+}
+
+function sliceSpritesheet(imagePath: string, cols: number, rows: number): Promise<void> {
+  const script = path.join(process.cwd(), 'slice_spritesheet.py')
+  const outputDir = path.join(path.dirname(imagePath), 'sliced')
+  const prefix = path.basename(imagePath, path.extname(imagePath))
+  return new Promise((resolve, reject) => {
+    execFile(
+      'python3',
+      [script, imagePath, String(cols), String(rows), outputDir, prefix],
+      { cwd: process.cwd() },
+      (err, _stdout, stderr) => {
+        if (err) {
+          console.error(`slice failed for ${imagePath}:`, stderr)
+          reject(err)
+        } else {
+          resolve()
+        }
+      }
+    )
   })
 }
