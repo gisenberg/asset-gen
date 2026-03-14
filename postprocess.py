@@ -14,7 +14,7 @@ import os
 import sys
 import glob
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 ASSETS_DIR = "assets"
 GENERATED_DIR = "generated_images"
@@ -71,7 +71,7 @@ def cleanup_near_magenta(img_array):
     This cleans them up so chroma keying works cleanly.
     """
     r, g, b = img_array[:, :, 0], img_array[:, :, 1], img_array[:, :, 2]
-    near_magenta = (r > 180) & (g < 80) & (b > 180)
+    near_magenta = (r > 150) & (g < 100) & (b > 150)
     img_array[near_magenta] = MAGENTA
     return img_array
 
@@ -122,18 +122,31 @@ def process_sheet(image_path):
 
 
 def process_prop(image_path):
-    """Remove background with rembg, composite onto magenta."""
+    """Remove background with rembg, composite onto magenta.
+
+    Erodes the alpha mask by a few pixels to clip edge fringe where
+    background color bleeds into semi-transparent border pixels.
+    """
     from rembg import remove
 
     img = Image.open(image_path).convert("RGB")
     # rembg returns RGBA with transparent background
     result = remove(img)
 
+    # Erode alpha channel to trim fringe pixels at edges
+    alpha = result.split()[3]
+    alpha = alpha.filter(ImageFilter.MinFilter(size=3))
+    result.putalpha(alpha)
+
     # Composite onto solid magenta
     bg = Image.new("RGBA", result.size, (*MAGENTA, 255))
     bg.paste(result, (0, 0), result)
 
-    bg.convert("RGB").save(image_path)
+    # Clean up any remaining near-magenta fringe
+    img_array = np.array(bg.convert("RGB"))
+    cleanup_near_magenta(img_array)
+
+    Image.fromarray(img_array).save(image_path)
     return True
 
 

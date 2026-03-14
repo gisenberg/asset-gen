@@ -138,7 +138,7 @@ function stripMagenta(img: HTMLImageElement, w: number, h: number): HTMLCanvasEl
   for (let i = 0; i < px.length; i += 4) {
     const r = px[i], g = px[i + 1], b = px[i + 2]
     // Magenta: high red, low green, high blue
-    if (r > 200 && g < 60 && b > 200) {
+    if (r > 150 && g < 100 && b > 150) {
       px[i + 3] = 0 // set alpha to 0
     }
   }
