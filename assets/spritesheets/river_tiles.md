@@ -34,13 +34,10 @@ The mask image shows BLUE regions for water and GREEN regions for grass banks. P
 - (6,0)-(6,3) **Grass-to-stone transitions** — N, E, S, W edge transitions
 - (7,0)-(7,3) **Grass-to-water transitions** — N, E, S, W edge transitions with shoreline
 
-## River Style
-- Shallow forest stream, blue-green pixel water
-- Gentle current suggested by 1-2 lighter blue highlight pixel lines along flow direction
-- Soft earthy banks: 2-3 pixels of dark brown/green transitioning from water to grass
-- Water palette: #1e3a6a, #2e5a8a, #4e7aaa, #6e9acc (highlight)
-- Grass palette: #2d5a1e, #3d7a2e, #5a9a3e, #7aba5e
-- Bank transition: #3a4a2e, #4a3a1e
+## River Description
+- Shallow forest stream with flowing water
+- Gentle current suggested by lighter highlight lines along flow direction
+- Earthy banks where water meets grass, natural transition
 
-## MASK REFERENCE
+style: pixel_16bit
 grid_mask: grid_mask_4x8_connectable.png

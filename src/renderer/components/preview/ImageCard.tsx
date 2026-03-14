@@ -50,6 +50,7 @@ export function MagentaStrippedImage({ src, alt, className }: { src: string; alt
 
 export function ImageCard({ image, isSelected, onSelect, onSetActive }: ImageCardProps) {
   const [showPrompt, setShowPrompt] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const displayTime = image.createdAt
     ? new Date(image.createdAt).toLocaleString()
@@ -79,7 +80,20 @@ export function ImageCard({ image, isSelected, onSelect, onSetActive }: ImageCar
         )}
       </div>
       {showPrompt && image.prompt && (
-        <div className="image-prompt">{image.prompt}</div>
+        <div className="image-prompt">
+          <button
+            className="copy-prompt-btn"
+            onClick={(e) => {
+              e.stopPropagation()
+              navigator.clipboard.writeText(image.prompt)
+              setCopied(true)
+              setTimeout(() => setCopied(false), 1500)
+            }}
+          >
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+          {image.prompt}
+        </div>
       )}
     </div>
   )

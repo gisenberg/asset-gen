@@ -36,8 +36,19 @@ export async function buildPromptForAsset(assetsDir: string, assetId: string): P
   }
 
   // Asset-specific markdown
-  const assetContent = await loadMd(assetPath)
+  const assetRaw = await loadRaw(assetPath)
+  const assetContent = stripTitleLines(assetRaw || '')
   if (assetContent) parts.push(assetContent)
+
+  // Check for style: reference in the asset markdown
+  if (assetRaw) {
+    const styleMatch = assetRaw.match(/^style:\s*(\S+)\s*$/m)
+    if (styleMatch) {
+      const stylePath = path.join(assetsDir, 'styles', styleMatch[1] + '.md')
+      const styleContent = await loadMd(stylePath)
+      if (styleContent) parts.push(styleContent)
+    }
+  }
 
   // For connectable variants, inject seamlessness instructions
   if (assetId.includes('connectable/')) {
@@ -174,16 +185,24 @@ function buildSeamlessnessInstructions(variantName: string): string {
   return lines.join('\n')
 }
 
-async function loadMd(filePath: string): Promise<string | null> {
+async function loadRaw(filePath: string): Promise<string | null> {
   try {
-    const text = await fs.readFile(filePath, 'utf-8')
-    const lines = text.split('\n')
-    // Strip leading title lines (# Foo) — matching Python behavior
-    const contentLines = lines.filter((l) => !l.startsWith('# '))
-    return contentLines.join('\n').trim() || null
+    return await fs.readFile(filePath, 'utf-8')
   } catch {
     return null
   }
+}
+
+function stripTitleLines(text: string): string {
+  const lines = text.split('\n')
+  const contentLines = lines.filter((l) => !l.startsWith('# '))
+  return contentLines.join('\n').trim()
+}
+
+async function loadMd(filePath: string): Promise<string | null> {
+  const raw = await loadRaw(filePath)
+  if (!raw) return null
+  return stripTitleLines(raw) || null
 }
 
 async function getCategoryFiles(dir: string): Promise<string[]> {

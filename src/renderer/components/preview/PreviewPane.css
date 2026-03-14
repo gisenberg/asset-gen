@@ -107,6 +107,7 @@
 }
 
 .image-prompt {
+  position: relative;
   padding: 6px 8px;
   font-size: 10px;
   line-height: 1.4;
@@ -117,6 +118,23 @@
   overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.copy-prompt-btn {
+  float: right;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-size: 10px;
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+.copy-prompt-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 /* Generation status */
