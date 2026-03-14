@@ -1,0 +1,11 @@
+appId: com.assetgen.app
+productName: Asset Gen
+directories:
+  buildResources: build
+  output: release
+files:
+  - dist/**/*
+  - "!node_modules/**/*"
+mac:
+  target: dmg
+  artifactName: ${productName}-${version}-${arch}.${ext}
