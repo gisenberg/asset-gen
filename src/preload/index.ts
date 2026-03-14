@@ -20,6 +20,10 @@ const api: ElectronAPI = {
   setActiveSelection: (assetId: string, imagePath: string) =>
     ipcRenderer.invoke('set-active-selection', assetId, imagePath),
 
+  // Connectable variants
+  getConnectableVariantIds: (connectableDir: string) =>
+    ipcRenderer.invoke('get-connectable-variant-ids', connectableDir),
+
   // Tilemap
   getConnectableVariantImages: (connectableDir: string, model: string) =>
     ipcRenderer.invoke('get-connectable-variant-images', connectableDir, model),

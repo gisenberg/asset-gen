@@ -18,6 +18,9 @@ export interface ElectronAPI {
   getActiveSelections(): Promise<Record<string, string>>
   setActiveSelection(assetId: string, imagePath: string): Promise<void>
 
+  // Connectable variants
+  getConnectableVariantIds(connectableDir: string): Promise<string[]>
+
   // Tilemap
   getConnectableVariantImages(connectableDir: string, model: string): Promise<Record<string, string>>
   getBaseTileImage(model: string): Promise<string | null>

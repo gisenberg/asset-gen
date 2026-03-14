@@ -44,6 +44,20 @@ export function registerIpcHandlers() {
     return setActiveSelection(assetId, imagePath)
   })
 
+  ipcMain.handle('get-connectable-variant-ids', async (_event, connectableDir: string) => {
+    // Scan for .md files (excluding _*.md descriptors) under tiles/connectable/{dir}/
+    const dir = path.join(ASSETS_DIR, 'tiles', 'connectable', connectableDir)
+    try {
+      const entries = await fs.readdir(dir)
+      return entries
+        .filter((e) => e.endsWith('.md') && !e.startsWith('_'))
+        .map((e) => `tiles/connectable/${connectableDir}/${e.replace(/\.md$/, '')}`)
+        .sort()
+    } catch {
+      return []
+    }
+  })
+
   ipcMain.handle('get-connectable-variant-images', async (_event, connectableDir: string, model: string) => {
     return getConnectableVariantImages(GENERATED_DIR, connectableDir, model)
   })
