@@ -54,13 +54,17 @@ export async function getImagesForAsset(assetId: string): Promise<ImageInfo[]> {
 
       const fullPath = path.join(GENERATED_DIR, file)
       const parsed = parseImageFilename(file)
+      const meta = await loadMetadata(fullPath)
 
       images.push({
         path: fullPath,
         filename: file,
         assetId,
-        model: parsed.model,
+        model: meta?.modelShortName || parsed.model,
+        modelId: meta?.model || '',
         timestamp: parsed.timestamp,
+        createdAt: meta?.createdAt || '',
+        prompt: meta?.prompt || '',
         isActive: fullPath === activePath
       })
     }
@@ -70,6 +74,27 @@ export async function getImagesForAsset(assetId: string): Promise<ImageInfo[]> {
     return images
   } catch {
     return []
+  }
+}
+
+interface ImageMetadata {
+  assetId: string
+  model: string
+  modelShortName: string
+  prompt: string
+  maskPath: string | null
+  createdAt: string
+  completedAt: string
+  durationMs: number
+}
+
+async function loadMetadata(imagePath: string): Promise<ImageMetadata | null> {
+  const metaPath = imagePath.replace(/\.(png|jpg|jpeg)$/i, '.meta.json')
+  try {
+    const raw = await fs.readFile(metaPath, 'utf-8')
+    return JSON.parse(raw)
+  } catch {
+    return null
   }
 }
 

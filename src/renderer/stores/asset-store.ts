@@ -24,7 +24,17 @@ export const useAssetStore = create<AssetState>((set, get) => ({
     set({ loading: true })
     try {
       const tree = await window.electronAPI.scanAssets()
-      set({ tree, loading: false })
+      const { expandedIds } = get()
+      // Auto-expand top-level categories on first load
+      if (expandedIds.size === 0) {
+        const expanded = new Set<string>()
+        for (const node of tree) {
+          if (node.type === 'category') expanded.add(node.id)
+        }
+        set({ tree, loading: false, expandedIds: expanded })
+      } else {
+        set({ tree, loading: false })
+      }
     } catch {
       set({ loading: false })
     }

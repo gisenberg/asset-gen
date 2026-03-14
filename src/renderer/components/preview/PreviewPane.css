@@ -87,6 +87,33 @@
   color: var(--text-muted);
 }
 
+.prompt-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.prompt-toggle:hover {
+  color: var(--text-secondary);
+}
+
+.image-prompt {
+  padding: 6px 8px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border);
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 /* Generation status */
 .generation-status {
   padding: 8px 12px;
@@ -131,6 +158,18 @@
   font-size: 11px;
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border);
+}
+
+.mask-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.mask-toggle input {
+  cursor: pointer;
 }
 
 .tilemap-model-selector select {

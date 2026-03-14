@@ -102,6 +102,20 @@ export async function generateWithMcp(
     const pathMatch = textContent.match(/saved to[:\s]+(.+\.(png|jpg))/i)
     if (pathMatch) {
       job.resultPath = pathMatch[1]
+
+      // Save metadata sidecar
+      const metaPath = job.resultPath.replace(/\.(png|jpg|jpeg)$/i, '.meta.json')
+      const meta = {
+        assetId,
+        model: modelId,
+        modelShortName: getShortName(modelId),
+        prompt,
+        maskPath: maskPath || null,
+        createdAt: new Date(job.startedAt!).toISOString(),
+        completedAt: new Date(job.completedAt).toISOString(),
+        durationMs: job.completedAt - job.startedAt!,
+      }
+      await fs.writeFile(metaPath, JSON.stringify(meta, null, 2))
     }
   } catch (err: any) {
     job.status = 'failed'

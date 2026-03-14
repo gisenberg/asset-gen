@@ -51,4 +51,28 @@ export function registerIpcHandlers() {
   ipcMain.handle('get-base-tile-image', async (_event, model: string) => {
     return getBaseTileImage(GENERATED_DIR, model)
   })
+
+  ipcMain.handle('get-connectable-mask-images', async () => {
+    const masksDir = path.join(ASSETS_DIR, 'tiles', 'connectable', 'masks')
+    const result: Record<string, string> = {}
+    try {
+      const files = await fs.readdir(masksDir)
+      for (const file of files) {
+        if (!/\.(png|jpg|jpeg)$/i.test(file)) continue
+        const variant = file.replace(/\.\w+$/, '')
+        result[variant] = `asset://${encodeURIComponent(path.join(masksDir, file))}`
+      }
+    } catch {}
+    return result
+  })
+
+  ipcMain.handle('get-base-tile-mask-image', async () => {
+    const maskPath = path.join(ASSETS_DIR, 'tiles', 'tile_mask.png')
+    try {
+      await fs.access(maskPath)
+      return `asset://${encodeURIComponent(maskPath)}`
+    } catch {
+      return null
+    }
+  })
 }

@@ -21,6 +21,8 @@ export interface ElectronAPI {
   // Tilemap
   getConnectableVariantImages(connectableDir: string, model: string): Promise<Record<string, string>>
   getBaseTileImage(model: string): Promise<string | null>
+  getConnectableMaskImages(): Promise<Record<string, string>>
+  getBaseTileMaskImage(): Promise<string | null>
 
   // File watch events (push from main → renderer)
   onTreeChanged(callback: () => void): () => void
@@ -34,7 +36,10 @@ export interface ImageInfo {
   filename: string
   assetId: string
   model: string
+  modelId: string
   timestamp: string
+  createdAt: string
+  prompt: string
   isActive: boolean
 }
 

@@ -25,6 +25,10 @@ const api: ElectronAPI = {
     ipcRenderer.invoke('get-connectable-variant-images', connectableDir, model),
   getBaseTileImage: (model: string) =>
     ipcRenderer.invoke('get-base-tile-image', model),
+  getConnectableMaskImages: () =>
+    ipcRenderer.invoke('get-connectable-mask-images'),
+  getBaseTileMaskImage: () =>
+    ipcRenderer.invoke('get-base-tile-mask-image'),
 
   // File watch events
   onTreeChanged: (callback: () => void) => {

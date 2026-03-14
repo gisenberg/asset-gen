@@ -7,14 +7,16 @@ interface TilemapPreviewProps {
 
 // Layout showing all connectable variants in a coherent network.
 // Edges: N=top-right, E=bottom-right, S=bottom-left, W=top-left
+// Adjacency: col+1 shares E↔W edges, row+1 shares S↔N edges.
+// End tiles have one connection edge pointing inward toward the path.
 const TILEMAP: (string | null)[][] = [
-  [null,         null,          null,         'end_n',        null,            null,          null],
+  [null,         null,          null,         'end_s',        null,            null,          null],
   [null,         null,          null,         'straight_ns',  null,            null,          null],
-  ['end_w',      'straight_ew', 'corner_ne',  'tjunction_nsw','corner_nw',    'straight_ew', 'end_e'],
+  ['end_e',      'straight_ew', 'corner_ne',  'tjunction_nsw','corner_nw',    'straight_ew', 'end_w'],
   [null,         null,          'straight_ns','crossroads',   'straight_ns',  null,          null],
   [null,         null,          'corner_se',  'tjunction_nes','tjunction_esw','corner_sw',   null],
   [null,         null,          null,         'straight_ns',  'straight_ns',  null,          null],
-  [null,         null,          null,         'end_s',        'tjunction_new','straight_ew', 'end_e'],
+  [null,         null,          null,         'end_n',        'tjunction_new','straight_ew', 'end_w'],
 ]
 
 // The diamond in each 1024x1024 source image is 820x410 centered at (512, 512).
@@ -179,7 +181,7 @@ function render(
       const drawX = cx - CENTER_X
       const drawY = cy - CENTER_Y
 
-      ctx.drawImage(src, drawX, drawY)
+      ctx.drawImage(src, drawX, drawY, Math.ceil(RENDER_IMG_SIZE), Math.ceil(RENDER_IMG_SIZE))
     }
   }
 }

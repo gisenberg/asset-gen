@@ -22,8 +22,11 @@ export function PreviewPane() {
   const jobs = useGenerationStore((s) => s.jobs)
   const [images, setImages] = useState<ImageInfo[]>([])
   const [tilemapModel, setTilemapModel] = useState(selectedModel.shortName)
+  const [showMasks, setShowMasks] = useState(false)
   const [variantImages, setVariantImages] = useState<Record<string, string>>({})
   const [baseTileImage, setBaseTileImage] = useState<string | null>(null)
+  const [maskImages, setMaskImages] = useState<Record<string, string>>({})
+  const [baseMaskImage, setBaseMaskImage] = useState<string | null>(null)
 
   const connectableType = selectedAsset ? getConnectableType(selectedAsset.id) : null
 
@@ -50,6 +53,17 @@ export function PreviewPane() {
     window.electronAPI.getConnectableVariantImages(connectableType, tilemapModel).then(setVariantImages)
     window.electronAPI.getBaseTileImage(tilemapModel).then(setBaseTileImage)
   }, [connectableType, tilemapModel])
+
+  // Load mask images once when connectable type is set
+  useEffect(() => {
+    if (!connectableType) {
+      setMaskImages({})
+      setBaseMaskImage(null)
+      return
+    }
+    window.electronAPI.getConnectableMaskImages().then(setMaskImages)
+    window.electronAPI.getBaseTileMaskImage().then(setBaseMaskImage)
+  }, [connectableType])
 
   // Listen for image changes
   useEffect(() => {
@@ -99,17 +113,32 @@ export function PreviewPane() {
       {connectableType && (
         <>
           <div className="tilemap-model-selector">
-            <span>Tilemap model:</span>
-            <select
-              value={tilemapModel}
-              onChange={(e) => setTilemapModel(e.target.value)}
-            >
-              {MODELS.map((m) => (
-                <option key={m.shortName} value={m.shortName}>{m.displayName}</option>
-              ))}
-            </select>
+            {!showMasks && (
+              <>
+                <span>Model:</span>
+                <select
+                  value={tilemapModel}
+                  onChange={(e) => setTilemapModel(e.target.value)}
+                >
+                  {MODELS.map((m) => (
+                    <option key={m.shortName} value={m.shortName}>{m.displayName}</option>
+                  ))}
+                </select>
+              </>
+            )}
+            <label className="mask-toggle">
+              <input
+                type="checkbox"
+                checked={showMasks}
+                onChange={(e) => setShowMasks(e.target.checked)}
+              />
+              Show masks
+            </label>
           </div>
-          <TilemapPreview variantImages={variantImages} baseTileImage={baseTileImage} />
+          <TilemapPreview
+            variantImages={showMasks ? maskImages : variantImages}
+            baseTileImage={showMasks ? baseMaskImage : baseTileImage}
+          />
         </>
       )}
 
