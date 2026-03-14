@@ -100,24 +100,44 @@ export async function generateWithMcp(
     // Parse result to find the saved file path
     const content = result.content as Array<{ type: string; text?: string }>
     const textContent = content.find((c) => c.type === 'text')?.text || ''
-    const pathMatch = textContent.match(/saved to[:\s]+(.+\.(png|jpg))/i)
-    if (pathMatch) {
-      job.resultPath = pathMatch[1]
-      await postprocessImage(job.resultPath)
+    let savedPath: string | null = null
+    try {
+      const parsed = JSON.parse(textContent)
+      if (parsed.saved_to) savedPath = parsed.saved_to
+    } catch {
+      // Fallback: try regex for plain text responses
+      const pathMatch = textContent.match(/saved.to[:\s"]+(.+?\.(png|jpg))/i)
+      if (pathMatch) savedPath = pathMatch[1]
+    }
+    if (savedPath) {
+      job.resultPath = savedPath
+
+      // Postprocess (non-blocking for metadata)
+      try {
+        await postprocessImage(job.resultPath)
+      } catch (e: any) {
+        console.error('postprocess error (non-fatal):', e.message)
+      }
 
       // Save metadata sidecar
-      const metaPath = job.resultPath.replace(/\.(png|jpg|jpeg)$/i, '.meta.json')
-      const meta = {
-        assetId,
-        model: modelId,
-        modelShortName: getShortName(modelId),
-        prompt,
-        maskPath: maskPath || null,
-        createdAt: new Date(job.startedAt!).toISOString(),
-        completedAt: new Date(job.completedAt).toISOString(),
-        durationMs: job.completedAt - job.startedAt!,
+      try {
+        const metaPath = job.resultPath.replace(/\.(png|jpg|jpeg)$/i, '.meta.json')
+        const meta = {
+          assetId,
+          model: modelId,
+          modelShortName: getShortName(modelId),
+          prompt,
+          maskPath: maskPath || null,
+          createdAt: new Date(job.startedAt!).toISOString(),
+          completedAt: new Date(job.completedAt).toISOString(),
+          durationMs: job.completedAt - job.startedAt!,
+        }
+        await fs.writeFile(metaPath, JSON.stringify(meta, null, 2))
+      } catch (e: any) {
+        console.error('metadata write error:', e.message)
       }
-      await fs.writeFile(metaPath, JSON.stringify(meta, null, 2))
+    } else {
+      console.error('Could not parse saved file path from MCP response:', textContent.slice(0, 200))
     }
   } catch (err: any) {
     job.status = 'failed'
