@@ -39,6 +39,12 @@ export async function buildPromptForAsset(assetsDir: string, assetId: string): P
   const assetContent = await loadMd(assetPath)
   if (assetContent) parts.push(assetContent)
 
+  // For connectable variants, inject seamlessness instructions
+  if (assetId.includes('connectable/')) {
+    const leafName = assetId.split('/').pop()!
+    parts.push(buildSeamlessnessInstructions(leafName))
+  }
+
   const text = parts.join(' ')
   const maskPath = await resolveMask(assetsDir, assetId)
   return { text, maskPath }
@@ -73,6 +79,66 @@ async function resolveMask(assetsDir: string, assetId: string): Promise<string |
   } catch {}
 
   return null
+}
+
+// Edge connection info for each variant
+const VARIANT_EDGES: Record<string, string[]> = {
+  straight_ew: ['E', 'W'],
+  straight_ns: ['N', 'S'],
+  corner_ne: ['N', 'E'],
+  corner_nw: ['N', 'W'],
+  corner_se: ['S', 'E'],
+  corner_sw: ['S', 'W'],
+  tjunction_nes: ['N', 'E', 'S'],
+  tjunction_new: ['N', 'E', 'W'],
+  tjunction_nsw: ['N', 'S', 'W'],
+  tjunction_esw: ['E', 'S', 'W'],
+  crossroads: ['N', 'E', 'S', 'W'],
+  end_n: ['N'],
+  end_e: ['E'],
+  end_s: ['S'],
+  end_w: ['W'],
+}
+
+const EDGE_NAMES: Record<string, string> = {
+  N: 'top-right',
+  E: 'bottom-right',
+  S: 'bottom-left',
+  W: 'top-left',
+}
+
+function buildSeamlessnessInstructions(variantName: string): string {
+  const edges = VARIANT_EDGES[variantName]
+  if (!edges) return ''
+
+  const connectedEdges = edges.map((e) => `${e} (${EDGE_NAMES[e]})`).join(', ')
+  const allEdgeNames = ['N', 'E', 'S', 'W']
+  const disconnectedEdges = allEdgeNames
+    .filter((e) => !edges.includes(e))
+    .map((e) => `${e} (${EDGE_NAMES[e]})`)
+    .join(', ')
+
+  const lines = [
+    '## Seamless Tiling Instructions',
+    `This tile connects on edges: ${connectedEdges}.`,
+  ]
+
+  if (disconnectedEdges) {
+    lines.push(
+      `Edges ${disconnectedEdges} have NO feature — they must be pure ground terrain that seamlessly matches an adjacent plain grass tile.`
+    )
+  }
+
+  lines.push(
+    'CRITICAL for seamless tiling:',
+    '- The ground (green mask region) must use IDENTICAL color, texture, and value as a plain grass base tile — same hue, same brightness, same brushstroke density.',
+    '- At every edge boundary, the ground texture must be continuous — no visible seam, no color shift, no abrupt texture change.',
+    '- The feature (blue mask region) must cross connected edges at EXACTLY the center 40% of each edge. The crossing width and position must be identical on every connected edge so tiles align when placed adjacent.',
+    '- Where the feature meets a disconnected edge\'s ground, it must taper and blend into the grass naturally — no hard cutoffs.',
+    '- Bank/shore transitions between feature and ground should be soft, natural gradients — not hard lines.'
+  )
+
+  return lines.join('\n')
 }
 
 async function loadMd(filePath: string): Promise<string | null> {

@@ -20,6 +20,12 @@ const api: ElectronAPI = {
   setActiveSelection: (assetId: string, imagePath: string) =>
     ipcRenderer.invoke('set-active-selection', assetId, imagePath),
 
+  // Tilemap
+  getConnectableVariantImages: (connectableDir: string, model: string) =>
+    ipcRenderer.invoke('get-connectable-variant-images', connectableDir, model),
+  getBaseTileImage: (model: string) =>
+    ipcRenderer.invoke('get-base-tile-image', model),
+
   // File watch events
   onTreeChanged: (callback: () => void) => {
     const handler = () => callback()

@@ -121,3 +121,76 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Tilemap */
+.tilemap-model-selector {
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.tilemap-model-selector select {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+}
+
+.tilemap-preview {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tilemap-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.tilemap-canvas-wrapper {
+  overflow: auto;
+  max-height: 400px;
+  background: #2a2a2a;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.tilemap-canvas-wrapper canvas {
+  display: block;
+}
+
+.tilemap-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.tilemap-controls button {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tilemap-controls button:hover {
+  background: var(--bg-hover);
+}

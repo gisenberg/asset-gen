@@ -76,8 +76,10 @@ export async function generateWithMcp(
       const b64 = maskData.toString('base64')
       const dataUrl = `data:image/png;base64,${b64}`
       mcpPrompt = [
+        { type: 'text', text: 'INSTRUCTIONS: Read all the instructions below carefully BEFORE looking at the mask image.\n\n' + prompt },
+        { type: 'text', text: '\n\nBELOW IS THE MASK IMAGE. This is NOT a reference — it is a strict template you MUST follow. Paint ONLY inside the colored regions. The output image must have the EXACT SAME shape boundaries as this mask. Do NOT change the shape, size, or position of any region. Magenta (#FF00FF) pixels MUST remain magenta in your output.' },
         { type: 'image_url', image_url: { url: dataUrl } },
-        { type: 'text', text: prompt }
+        { type: 'text', text: 'REMINDER: Your output MUST match the mask boundaries exactly. The diamond/feature shapes in the mask define where you paint. Magenta stays magenta. Do not add anything outside the mask regions. Do not reshape the diamond.' }
       ]
     }
 

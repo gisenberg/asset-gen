@@ -1,12 +1,13 @@
 import { ipcMain } from 'electron'
 import { scanAssetsDir } from './asset-scanner'
 import { buildPromptForAsset } from './prompt-builder'
-import { getImagesForAsset, getActiveSelections, setActiveSelection } from './image-manager'
+import { getImagesForAsset, getActiveSelections, setActiveSelection, getConnectableVariantImages, getBaseTileImage } from './image-manager'
 import { generateWithMcp } from './mcp-client'
 import fs from 'fs/promises'
 import path from 'path'
 
 const ASSETS_DIR = path.join(process.cwd(), 'assets')
+const GENERATED_DIR = path.join(process.cwd(), 'generated_images')
 
 export function registerIpcHandlers() {
   ipcMain.handle('scan-assets', async () => {
@@ -41,5 +42,13 @@ export function registerIpcHandlers() {
 
   ipcMain.handle('set-active-selection', async (_event, assetId: string, imagePath: string) => {
     return setActiveSelection(assetId, imagePath)
+  })
+
+  ipcMain.handle('get-connectable-variant-images', async (_event, connectableDir: string, model: string) => {
+    return getConnectableVariantImages(GENERATED_DIR, connectableDir, model)
+  })
+
+  ipcMain.handle('get-base-tile-image', async (_event, model: string) => {
+    return getBaseTileImage(GENERATED_DIR, model)
   })
 }

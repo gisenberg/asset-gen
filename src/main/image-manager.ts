@@ -119,3 +119,60 @@ export async function setActiveSelection(assetId: string, imagePath: string): Pr
   selections[assetId] = imagePath
   await fs.writeFile(SELECTIONS_FILE, JSON.stringify(selections, null, 2))
 }
+
+/**
+ * Get asset:// URLs for all connectable variant images of a given type and model.
+ * connectableDir is e.g. "river". model is e.g. "nb1".
+ * Returns { "straight_ew": "asset://...", "corner_ne": "asset://...", ... }
+ */
+export async function getConnectableVariantImages(
+  generatedDir: string,
+  connectableDir: string,
+  model: string
+): Promise<Record<string, string>> {
+  const variants: Record<string, string> = {}
+  const prefix = `tile_${connectableDir}_`
+
+  try {
+    const files = await fs.readdir(generatedDir)
+    for (const file of files) {
+      if (!file.startsWith(prefix)) continue
+      if (!file.match(/\.(png|jpg|jpeg)$/i)) continue
+
+      const parsed = parseImageFilename(file)
+      if (parsed.model !== model) continue
+
+      // Extract variant name: tile_river_straight_ew_nb1_... → straight_ew
+      const withoutPrefix = file.substring(prefix.length)
+      const variantMatch = withoutPrefix.match(/^(.+?)_(?:nb1|nb2|nbpro|v\d+)/)
+      if (variantMatch) {
+        const variant = variantMatch[1]
+        variants[variant] = `asset://${encodeURIComponent(path.join(generatedDir, file))}`
+      }
+    }
+  } catch {}
+
+  return variants
+}
+
+/**
+ * Get the asset:// URL for the base grass tile for a given model.
+ */
+export async function getBaseTileImage(
+  generatedDir: string,
+  model: string
+): Promise<string | null> {
+  try {
+    const files = await fs.readdir(generatedDir)
+    for (const file of files) {
+      if (!file.startsWith('tile_grass_')) continue
+      if (!file.match(/\.(png|jpg|jpeg)$/i)) continue
+
+      const parsed = parseImageFilename(file)
+      if (parsed.model === model) {
+        return `asset://${encodeURIComponent(path.join(generatedDir, file))}`
+      }
+    }
+  } catch {}
+  return null
+}

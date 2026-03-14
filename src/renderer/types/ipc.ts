@@ -18,6 +18,10 @@ export interface ElectronAPI {
   getActiveSelections(): Promise<Record<string, string>>
   setActiveSelection(assetId: string, imagePath: string): Promise<void>
 
+  // Tilemap
+  getConnectableVariantImages(connectableDir: string, model: string): Promise<Record<string, string>>
+  getBaseTileImage(model: string): Promise<string | null>
+
   // File watch events (push from main → renderer)
   onTreeChanged(callback: () => void): () => void
   onFileChanged(callback: (filePath: string) => void): () => void
