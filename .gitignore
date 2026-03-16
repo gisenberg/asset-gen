@@ -5,3 +5,4 @@ release/
 .DS_Store
 *.pyc
 __pycache__/
+generated_images/
